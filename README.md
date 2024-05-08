@@ -5,4 +5,5 @@ A simple fake dns server implemented using scapy. Whenever it receives a DNS req
 
 1. Clone the repository:
 
-git clone https://github.com/chiacchius/simple_fake_DNS.git
+ ```bash
+   git clone https://github.com/chiacchius/simple_fake_DNS.git
